@@ -11,7 +11,6 @@ const protectedPaths = [
   '/wallet',
   '/settings',
   '/my-store',
-  '/learn',
 ];
 
 export async function middleware(request: NextRequest) {
@@ -55,7 +54,5 @@ export const config = {
     '/settings/:path*',
     '/my-store',
     '/my-store/:path*',
-    '/learn',
-    '/learn/:path*',
   ],
 };

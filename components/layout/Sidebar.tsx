@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  Search, Sparkles, Users, Store, Wallet, GraduationCap,
+  Search, Sparkles, Users, Store, Wallet,
   Crown, ChevronRight, Settings, TrendingUp,
   Zap, BarChart2, Package, Heart, ArrowUpRight,
   CreditCard, Download, FileText, CheckCircle2, Sprout
@@ -19,7 +19,6 @@ const navItems = [
   { icon: Users,    label: 'Community',  href: '/community' },
   { icon: Store,    label: 'My Store',   href: '/my-store' },
   { icon: Wallet,   label: 'Wallet',     href: '/wallet' },
-  { icon: GraduationCap, label: 'Learn', href: '/learn' },
 ];
 
 /* Circular G logo */

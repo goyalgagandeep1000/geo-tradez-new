@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Search, Sparkles, Users, Store, GraduationCap } from 'lucide-react';
+import { Search, Sparkles, Users, Store } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const tabs = [
@@ -9,7 +9,6 @@ const tabs = [
   { icon: Sparkles, label: 'AI Create', href: '/ai-create' },
   { icon: Users, label: 'Community', href: '/community' },
   { icon: Store, label: 'My Store', href: '/my-store' },
-  { icon: GraduationCap, label: 'Learn', href: '/learn' },
 ];
 
 export function MobileNav() {
