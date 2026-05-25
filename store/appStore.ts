@@ -167,13 +167,13 @@ export const useAppStore = create<AppState>()(
       login: async (email, password) => {
         const { profile } = await api.login(email, password);
         set({ isAuthenticated: true, profile });
-        await get().hydrateFromApi();
+        void get().hydrateFromApi();
       },
 
       register: async (email, password, name) => {
         const { profile } = await api.register(email, password, name);
         set({ isAuthenticated: true, profile });
-        await get().hydrateFromApi();
+        void get().hydrateFromApi();
       },
 
       logout: async () => {

@@ -1,8 +1,8 @@
-import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import type { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
+import { createSessionToken, verifySessionToken } from '@/lib/jwt';
 import type { User } from '@/types';
 
 export const COOKIE_NAME = 'geotradez-token';
@@ -26,10 +26,6 @@ export function clearAuthCookieOnResponse(response: NextResponse) {
   response.cookies.delete(COOKIE_NAME);
   return response;
 }
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'geotradez-dev-secret-change-in-production'
-);
-
 export async function hashPassword(password: string) {
   return bcrypt.hash(password, 10);
 }
@@ -39,16 +35,11 @@ export async function verifyPassword(password: string, hash: string) {
 }
 
 export async function createToken(userId: string) {
-  return new SignJWT({ sub: userId })
-    .setProtectedHeader({ alg: 'HS256' })
-    .setIssuedAt()
-    .setExpirationTime('7d')
-    .sign(JWT_SECRET);
+  return createSessionToken(userId);
 }
 
 export async function verifyToken(token: string) {
-  const { payload } = await jwtVerify(token, JWT_SECRET);
-  return payload.sub as string | undefined;
+  return verifySessionToken(token);
 }
 
 export async function setAuthCookie(token: string) {

@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useAppStore } from '@/store/appStore';
 
-export default function LoginPage() {
-  const router = useRouter();
+function LoginForm() {
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/discover';
   const { login, addToast } = useAppStore();
   const [email, setEmail] = useState('james@geotradez.com');
   const [password, setPassword] = useState('password123');
@@ -24,10 +25,10 @@ export default function LoginPage() {
         await useAppStore.getState().register(email, password, name);
       }
       addToast(mode === 'login' ? 'Welcome back!' : 'Account created!');
-      router.push('/discover');
+      // Full page navigation so the auth cookie is sent before middleware runs
+      window.location.assign(redirectTo);
     } catch (err) {
       addToast(err instanceof Error ? err.message : 'Authentication failed', 'error');
-    } finally {
       setLoading(false);
     }
   };
@@ -118,5 +119,19 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f0f7e8] to-[#e8f4fc]">
+          <p className="text-[#6B7280]">Loading…</p>
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

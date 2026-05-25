@@ -1,11 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { jwtVerify } from 'jose';
+import { verifySessionToken } from '@/lib/jwt';
 
 const COOKIE_NAME = 'geotradez-token';
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'geotradez-dev-secret-change-in-production'
-);
 
 const protectedPaths = [
   '/discover',
@@ -32,22 +29,33 @@ export async function middleware(request: NextRequest) {
   }
 
   try {
-    await jwtVerify(token, JWT_SECRET);
+    const userId = await verifySessionToken(token);
+    if (!userId) throw new Error('Invalid token');
     return NextResponse.next();
   } catch {
     const loginUrl = new URL('/login', request.url);
-    return NextResponse.redirect(loginUrl);
+    loginUrl.searchParams.set('redirect', pathname);
+    const res = NextResponse.redirect(loginUrl);
+    res.cookies.delete(COOKIE_NAME);
+    return res;
   }
 }
 
 export const config = {
   matcher: [
+    '/discover',
     '/discover/:path*',
+    '/community',
     '/community/:path*',
+    '/ai-create',
     '/ai-create/:path*',
+    '/wallet',
     '/wallet/:path*',
+    '/settings',
     '/settings/:path*',
+    '/my-store',
     '/my-store/:path*',
+    '/learn',
     '/learn/:path*',
   ],
 };
