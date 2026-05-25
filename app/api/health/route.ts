@@ -43,8 +43,9 @@ export async function GET() {
         error: message,
         parsedHost: diagnosis.host,
         parsedPort: diagnosis.port,
-        hint:
-          message.includes('at `base`') || diagnosis.host === 'base'
+        hint: message.includes('self-signed certificate')
+          ? 'TLS/ssl issue — redeploy latest code (includes Supabase SSL fix) or contact support.'
+          : message.includes('at `base`') || diagnosis.host === 'base'
             ? 'Password contains @ — encode as %40 in Vercel DATABASE_URL and redeploy.'
             : 'Check DATABASE_URL on Vercel matches Supabase Transaction pooler (port 6543, pgbouncer=true).',
         hasDatabaseUrl: !!process.env.DATABASE_URL,
