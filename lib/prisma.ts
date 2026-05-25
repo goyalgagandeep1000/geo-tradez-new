@@ -1,29 +1,27 @@
 import { PrismaPg } from '@prisma/adapter-pg';
-import type { PoolConfig } from 'pg';
+import pg from 'pg';
 import { PrismaClient } from '@/lib/generated/prisma';
 
-function normalizeDatabaseUrl(url: string) {
-  if (
-    (url.includes('supabase.com') || url.includes('supabase.co')) &&
-    !url.includes('sslmode=')
-  ) {
-    return `${url}${url.includes('?') ? '&' : '?'}sslmode=require`;
-  }
-  return url;
+/** Remove ssl query params so they do not overwrite Pool `ssl` config via pg's URL parser. */
+export function stripSslQueryParams(url: string): string {
+  return url
+    .trim()
+    .replace(/^["']|["']$/g, '')
+    .replace(/([?&])sslmode=[^&]*/gi, '$1')
+    .replace(/([?&])sslcert=[^&]*/gi, '$1')
+    .replace(/([?&])sslkey=[^&]*/gi, '$1')
+    .replace(/([?&])sslrootcert=[^&]*/gi, '$1')
+    .replace(/\?&+/g, '?')
+    .replace(/&&+/g, '&')
+    .replace(/[?&]$/, '');
 }
 
-function createPgPoolConfig(connectionString: string): PoolConfig {
-  const config: PoolConfig = { connectionString };
-  // Supabase pooler on Vercel: Node pg needs explicit SSL; default verify fails with
-  // "self-signed certificate in certificate chain" on serverless.
-  if (
+function isRemotePostgres(connectionString: string) {
+  return (
     connectionString.includes('supabase.com') ||
     connectionString.includes('supabase.co') ||
-    connectionString.includes('sslmode=require')
-  ) {
-    config.ssl = { rejectUnauthorized: false };
-  }
-  return config;
+    process.env.NODE_ENV === 'production'
+  );
 }
 
 function createPrismaClient() {
@@ -31,8 +29,19 @@ function createPrismaClient() {
   if (!raw) {
     throw new Error('DATABASE_URL is not set');
   }
-  const connectionString = normalizeDatabaseUrl(raw);
-  const adapter = new PrismaPg(createPgPoolConfig(connectionString));
+
+  const connectionString = stripSslQueryParams(raw);
+  const remote = isRemotePostgres(connectionString);
+
+  // Must use a Pool instance — passing PoolConfig + connectionString with sslmode=
+  // makes pg parse ssl as {} and ignore rejectUnauthorized: false.
+  const pool = new pg.Pool({
+    connectionString,
+    max: remote ? 3 : 10,
+    ...(remote && { ssl: { rejectUnauthorized: false } }),
+  });
+
+  const adapter = new PrismaPg(pool);
   return new PrismaClient({ adapter });
 }
 
