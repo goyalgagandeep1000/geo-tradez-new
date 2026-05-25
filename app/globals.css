@@ -1,26 +1,160 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sora:wght@400;600;700;800&display=swap');
 @import "tailwindcss";
 
+@theme {
+  /* Dull blue backgrounds (not grey) */
+  --color-bg-base: #dce8f4;
+  --color-bg-soft: #e6f0f9;
+  --color-bg-surface: #f2f8fc;
+  --color-bg-white: #ffffff;
+  --color-bg-image: #e8f2fa;
+
+  /* Brand Greens */
+  --color-brand-900: #1A3A08;
+  --color-brand-800: #2D5016;
+  --color-brand-700: #3A6B1A;
+  --color-brand-600: #4A7C24;
+  --color-brand-500: #5A9430;
+  --color-brand-400: #72B84A;
+  --color-brand-200: #C5E0A0;
+  --color-brand-100: #E8F5D8;
+  --color-brand-50: #F0F7E8;
+
+  /* Text — high contrast on blue */
+  --color-text-primary: #10183f;
+  --color-text-secondary: #2d3656;
+  --color-text-muted: #5a6480;
+  --color-text-faint: #7a849c;
+
+  /* UI Elements — blue-tinted borders */
+  --color-border: #c8dae8;
+  --color-border-light: #dce8f2;
+
+  /* Fonts */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Sora', 'Inter', system-ui, sans-serif;
+
+  /* Shadows — blue tint for depth */
+  --shadow-card: 0 2px 10px rgba(30, 55, 90, 0.07), 0 1px 3px rgba(30, 55, 90, 0.05);
+  --shadow-elevated: 0 8px 28px rgba(30, 55, 90, 0.1), 0 2px 8px rgba(30, 55, 90, 0.06);
+  --shadow-side: 2px 0 12px rgba(30, 55, 90, 0.06);
+  --shadow-btn: 0 2px 8px rgba(74, 124, 36, 0.3);
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --app-bg: #dce8f4;
+  --app-bg-mid: #e4eff8;
+  --app-bg-light: #ecf4fb;
+  --app-surface: #ffffff;
+  --app-surface-muted: #f5faff;
+  --app-image-bg: #e8f2fa;
+  --app-border: #c8dae8;
+  --background: var(--app-bg);
+  --foreground: #10183f;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* {
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background: var(--background);
+  background: var(--app-bg);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* App shell — dull blue gradient (all dashboard tabs) */
+.app-shell-bg {
+  background: linear-gradient(
+    165deg,
+    #d4e4f2 0%,
+    #e2edf8 35%,
+    #e8f3fa 65%,
+    #dce8f4 100%
+  );
+  min-height: 100%;
+}
+
+/* Solid white cards — full visibility for text & photos */
+.app-card {
+  background: #ffffff;
+  border: 1px solid var(--app-border);
+  box-shadow: var(--shadow-card);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(200, 218, 232, 0.85);
+  box-shadow: 0 4px 20px rgba(30, 55, 90, 0.08);
+}
+
+.app-image-bg {
+  background-color: var(--app-image-bg);
+}
+
+.app-hover-surface:hover {
+  background-color: var(--app-bg-light);
+}
+
+/* Custom scrollbar — blue tint */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: #dce8f2;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #a8bfd4;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #8aa8c4;
+}
+
+a, button {
+  transition: all 0.15s ease;
+}
+
+.scroll-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scroll-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.wallet-card-gradient {
+  background: linear-gradient(135deg, #1A3A08 0%, #0D1B2A 100%);
+}
+
+.recharts-area-area {
+  fill: url(#colorRevenue);
+}
+
+.btn-discover-primary {
+  background: linear-gradient(135deg, #6fa318 0%, #5f8f12 50%, #4a7a0a 100%);
+  color: white;
+  box-shadow: 0 4px 14px rgba(95, 143, 18, 0.35);
+}
+
+.btn-discover-primary:hover {
+  background: linear-gradient(135deg, #5f8f12 0%, #4a7a0a 100%);
+}
+
+.discover-globe {
+  background-image: radial-gradient(circle at 2px 2px, rgba(16, 24, 63, 0.1) 1px, transparent 0);
+  background-size: 14px 14px;
+  mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 20%, transparent 72%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 20%, transparent 72%);
 }

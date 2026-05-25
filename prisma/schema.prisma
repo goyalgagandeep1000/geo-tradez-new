@@ -1,0 +1,245 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  avatar       String
+  role         String   @default("Seller")
+  isPro        Boolean  @default(false)
+  country      String   @default("")
+  flag         String   @default("")
+  bio          String?
+  online       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  wallet         Wallet?
+  storeProducts  StoreProduct[]
+  cartItems      CartItem[]
+  wishlistItems  WishlistItem[]
+  savedItems     SavedItem[]
+  notifications  Notification[]
+  messages       Message[]
+  aiThreads      AiThread[]
+  enrollments    Enrollment[]
+  channels       Channel[]      @relation("ChannelOwner")
+}
+
+model Product {
+  id             String   @id
+  image          String
+  category       String
+  categoryColor  String
+  title          String
+  seller         String
+  sellerVerified Boolean  @default(false)
+  rating         Float    @default(0)
+  reviewCount    String   @default("0")
+  price          Float
+  originalPrice  Float?
+  badge          String?
+  type           String   @default("digital")
+  tags           String   @default("[]")
+  createdAt      DateTime @default(now())
+
+  cartItems     CartItem[]
+  wishlistItems WishlistItem[]
+  savedItems    SavedItem[]
+}
+
+model StoreProduct {
+  id            String   @id @default(cuid())
+  userId        String
+  image         String
+  category      String
+  categoryColor String
+  title         String
+  price         Float
+  rating        Float    @default(0)
+  reviewCount   String   @default("0")
+  status        String   @default("Active")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Wallet {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  balance   Float    @default(0)
+  updatedAt DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+}
+
+model Transaction {
+  id            String   @id @default(cuid())
+  walletId      String
+  date          String
+  time          String
+  description   String
+  accountMask   String
+  type          String
+  paymentMethod String
+  amount        Float
+  status        String   @default("Completed")
+  balance       Float
+  createdAt     DateTime @default(now())
+
+  wallet Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}
+
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}
+
+model SavedItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String
+  title       String
+  description String
+  time        String
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Channel {
+  id        String   @id @default(cuid())
+  name      String
+  type      String
+  section   String
+  active    Boolean  @default(false)
+  ownerId   String?
+  createdAt DateTime @default(now())
+
+  owner    User?     @relation("ChannelOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  messages Message[]
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  channelId   String
+  userId      String
+  content     String
+  time        String
+  reactions   String   @default("[]")
+  embedIcon   String?
+  embedTitle  String?
+  embedSubtitle String?
+  createdAt   DateTime @default(now())
+
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Course {
+  id               String   @id
+  thumbnail        String
+  category         String
+  title            String
+  instructor       String
+  instructorAvatar String
+  duration         String
+  difficulty       String
+  rating           Float    @default(0)
+  students         String   @default("0")
+  price            String
+  createdAt        DateTime @default(now())
+
+  enrollments Enrollment[]
+}
+
+model Enrollment {
+  id        String   @id @default(cuid())
+  userId    String
+  courseId  String
+  progress  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+}
+
+model AiThread {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages AiMessage[]
+}
+
+model AiMessage {
+  id        String   @id @default(cuid())
+  threadId  String
+  role      String
+  content   String
+  time      String
+  createdAt DateTime @default(now())
+
+  thread AiThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+model RevenueSnapshot {
+  id     String @id @default(cuid())
+  userId String
+  date   String
+  revenue Float
+}

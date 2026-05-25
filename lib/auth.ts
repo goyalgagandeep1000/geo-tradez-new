@@ -1,0 +1,89 @@
+import { SignJWT, jwtVerify } from 'jose';
+import { cookies } from 'next/headers';
+import bcrypt from 'bcryptjs';
+import { prisma } from '@/lib/db';
+import type { User } from '@/types';
+
+const COOKIE_NAME = 'geotradez-token';
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET || 'geotradez-dev-secret-change-in-production'
+);
+
+export async function hashPassword(password: string) {
+  return bcrypt.hash(password, 10);
+}
+
+export async function verifyPassword(password: string, hash: string) {
+  return bcrypt.compare(password, hash);
+}
+
+export async function createToken(userId: string) {
+  return new SignJWT({ sub: userId })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('7d')
+    .sign(JWT_SECRET);
+}
+
+export async function verifyToken(token: string) {
+  const { payload } = await jwtVerify(token, JWT_SECRET);
+  return payload.sub as string | undefined;
+}
+
+export async function setAuthCookie(token: string) {
+  const cookieStore = await cookies();
+  cookieStore.set(COOKIE_NAME, token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 60 * 60 * 24 * 7,
+  });
+}
+
+export async function clearAuthCookie() {
+  const cookieStore = await cookies();
+  cookieStore.delete(COOKIE_NAME);
+}
+
+export async function getSessionUserId(): Promise<string | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(COOKIE_NAME)?.value;
+  if (!token) return null;
+  return (await verifyToken(token)) ?? null;
+}
+
+export async function getSessionUser() {
+  const userId = await getSessionUserId();
+  if (!userId) return null;
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  return user;
+}
+
+export function toPublicUser(user: {
+  id: string;
+  name: string;
+  avatar: string;
+  role: string;
+  isPro: boolean;
+  country: string;
+  flag: string;
+  online: boolean;
+  email?: string;
+  bio?: string | null;
+}): User & { email?: string; bio?: string } {
+  return {
+    id: user.id,
+    name: user.name,
+    avatar: user.avatar,
+    role: user.role,
+    isPro: user.isPro,
+    country: user.country,
+    flag: user.flag,
+    online: user.online,
+    ...(user.email !== undefined && { email: user.email }),
+    ...(user.bio !== undefined && user.bio !== null && { bio: user.bio }),
+  };
+}
+
+export { COOKIE_NAME };
