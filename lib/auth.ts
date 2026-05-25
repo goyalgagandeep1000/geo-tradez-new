@@ -1,10 +1,31 @@
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
+import type { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
 import type { User } from '@/types';
 
-const COOKIE_NAME = 'geotradez-token';
+export const COOKIE_NAME = 'geotradez-token';
+
+export function authCookieOptions() {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax' as const,
+    path: '/',
+    maxAge: 60 * 60 * 24 * 7,
+  };
+}
+
+export function applyAuthCookie(response: NextResponse, token: string) {
+  response.cookies.set(COOKIE_NAME, token, authCookieOptions());
+  return response;
+}
+
+export function clearAuthCookieOnResponse(response: NextResponse) {
+  response.cookies.delete(COOKIE_NAME);
+  return response;
+}
 const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || 'geotradez-dev-secret-change-in-production'
 );
@@ -32,13 +53,7 @@ export async function verifyToken(token: string) {
 
 export async function setAuthCookie(token: string) {
   const cookieStore = await cookies();
-  cookieStore.set(COOKIE_NAME, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 60 * 60 * 24 * 7,
-  });
+  cookieStore.set(COOKIE_NAME, token, authCookieOptions());
 }
 
 export async function clearAuthCookie() {
@@ -86,4 +101,3 @@ export function toPublicUser(user: {
   };
 }
 
-export { COOKIE_NAME };

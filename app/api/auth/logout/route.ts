@@ -1,7 +1,9 @@
-import { clearAuthCookie } from '@/lib/auth';
+import { clearAuthCookieOnResponse } from '@/lib/auth';
 import { jsonOk } from '@/lib/api-utils';
 
+export const runtime = 'nodejs';
+
 export async function POST() {
-  await clearAuthCookie();
-  return jsonOk({ ok: true });
+  const res = jsonOk({ ok: true });
+  return clearAuthCookieOnResponse(res);
 }
